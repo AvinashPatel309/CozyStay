@@ -1,14 +1,19 @@
 import { PrismaClient } from "@prisma/client";
+import dotenv from "dotenv";
 
-const prisma = new PrismaClient();
+dotenv.config({ path: "./.env" });
+
+const prisma = new PrismaClient({
+  log: ["query", "info", "warn", "error"],
+});
 
 const connectDB = async () => {
   try {
     await prisma.$connect();
-    console.log(`MySQL connected successfully via Prisma!`);
+    console.log("MySQL connected successfully via Prisma!");
     return prisma;
   } catch (error) {
-    console.log(`MySQL Connection Error: ${error.message}`);
+    console.error("MySQL Connection Error:", error.stack);
     process.exit(1);
   }
 };
