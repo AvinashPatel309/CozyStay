@@ -1,0 +1,158 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String? @unique
+  password  String
+  profileImage String? @default("https://cdn-icons-png.flaticon.com/512/847/847969.png")
+  feedback  HotelFeedback[]
+  refreshToken String? @unique
+  resetOTP String? @unique
+  resetOTPExpiresAt DateTime?
+  notifications Notification[]
+  bookings Booking[]
+  wishlist Wishlist[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
+
+model Hotel {
+  id String @id @default(cuid())
+  name String @unique
+  phone String @unique
+  email String? @unique
+  address String 
+  coverImage String? 
+  images HotelImages[]
+  description String?
+  feedback HotelFeedback[]
+  rooms HotelRooms[]
+  wishlist Wishlist[]
+  city String?
+  state String?
+  country String?
+  facilities String?
+  caclelationPolicy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HotelImages{
+  id String @id @default(cuid())
+  url String
+  hotelId String
+  hotel  Hotel @relation(fields: [hotelId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HotelFeedback {
+  id String @id @default(cuid())
+  rating Int
+  comment String?
+  userId String
+  hotelId String
+  user User @relation(fields: [userId], references: [id])
+  hotel Hotel @relation(fields: [hotelId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HotelRooms { 
+  id String @id @default(cuid())
+  type String
+  pricePerNight Float?
+  description String
+  image HotelRoomsImages[]
+  hotelId String
+  hotel Hotel @relation(fields: [hotelId], references: [id])
+  availableRooms RoomAvailability[]
+  amenities String?
+  booking Booking[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HotelRoomsImages {
+  id String @id @default(cuid())
+  url String
+  hotelRoomId String
+  hotelRoom HotelRooms @relation(fields: [hotelRoomId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RoomAvailability {
+  id String @id @default(cuid())
+  hotelRoomId String
+  hotelRoom HotelRooms @relation(fields: [hotelRoomId], references: [id])
+  date DateTime
+  availableCount Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Booking {
+  id String @id @default(cuid())
+  userId String
+  hotelRoomId String
+  hotelRoom HotelRooms @relation(fields: [hotelRoomId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  checkInDate DateTime
+  checkOutDate DateTime
+  totalPrice Float
+  status String @default("pending") // pending, confirmed, cancelled
+  payment Payment[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model Payment {
+  id String @id @default(cuid())
+  bookingId String
+  booking Booking @relation(fields: [bookingId], references: [id])
+  amount Float
+  paymentMethod String // e.g., "credit_card", "paypal"
+  status String @default("pending") // pending, completed, failed
+  transactionId String? @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model Notification {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  message String
+  read Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Wishlist {
+  id String @id @default(cuid())
+  userId String
+  hotelId String
+  user User @relation(fields: [userId], references: [id])
+  hotel Hotel @relation(fields: [hotelId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+
+
